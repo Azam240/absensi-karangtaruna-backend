@@ -1,0 +1,52 @@
+services:
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: kartar-laravel-prod
+    restart: unless-stopped
+    ports:
+      - "8002:80"
+    env_file:
+      - .env.production
+    depends_on:
+      db:
+        condition: service_healthy
+    networks:
+      - kartar-network
+
+  db:
+    image: mysql:8.0
+    container_name: kartar-mysql-prod
+    restart: unless-stopped
+    environment:
+      MYSQL_DATABASE: karangtaruna
+      MYSQL_ROOT_PASSWORD: 4vJ7b95wz0f2ECTdsWAQalotF3jinG6u
+      MYSQL_USER: kartar
+      MYSQL_PASSWORD: zw2OGThW4UAgFLPnpRV0vslIcmXHkxrq
+    volumes:
+      - mysql_data_prod:/var/lib/mysql
+    healthcheck:
+      test:
+        [
+          "CMD",
+          "mysqladmin",
+          "ping",
+          "-h",
+          "localhost",
+          "-u",
+          "root",
+          "-p4vJ7b95wz0f2ECTdsWAQalotF3jinG6u"
+        ]
+      interval: 5s
+      timeout: 5s
+      retries: 20
+    networks:
+      - kartar-network
+
+volumes:
+  mysql_data_prod:
+
+networks:
+  kartar-network:
+    driver: bridge

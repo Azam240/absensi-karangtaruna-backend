@@ -1,0 +1,46 @@
+services:
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: kartar-laravel
+    restart: unless-stopped
+    ports:
+      - "8000:80"
+    volumes:
+      - .:/var/www/html
+      - laravel_vendor:/var/www/html/vendor
+    depends_on:
+      db:
+        condition: service_healthy
+    networks:
+      - kartar-network
+
+  db:
+    image: mysql:8.0
+    container_name: kartar-mysql
+    restart: unless-stopped
+    environment:
+      MYSQL_DATABASE: karangtaruna
+      MYSQL_ROOT_PASSWORD: root
+      MYSQL_USER: kartar
+      MYSQL_PASSWORD: kartar123
+    ports:
+      - "3307:3306"
+    volumes:
+      - mysql_data:/var/lib/mysql
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-u", "root", "-proot"]
+      interval: 5s
+      timeout: 5s
+      retries: 20
+    networks:
+      - kartar-network
+
+volumes:
+  laravel_vendor:
+  mysql_data:
+
+networks:
+  kartar-network:
+    driver: bridge
